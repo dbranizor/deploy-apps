@@ -1,0 +1,42 @@
+- name: Create Minio Data Folder
+  become: true
+  file:
+    path: /minio
+    state: directory
+- name: Debgging Minio Keys
+  debug:
+    msg: "Minio Sec Keyu: {{MINIO_SECRET_KEY}}"
+- name: Debgging Minio Keys
+  debug:
+    msg: "Minio Access Key: {{MINIO_ACCESS_KEY}}"
+- name: Start Minio Container
+  become: true
+  register: minio_container_output
+  docker_container:
+    name: minio
+    image: dbranizor/dsb:minio
+    command: server /data
+    ports: 
+      - "{{MINIO_HOST_PORT}}:9000"
+    env:
+      MINIO_ACCESS_KEY: "{{MINIO_ACCESS_KEY}}"
+      MINIO_SECRET_KEY: "{{MINIO_SECRET_KEY}}"
+    state: started
+- name: Create Buckets
+  become: true
+  docker_container:
+    image: dbranizor/dsb:minio-mc
+    name: 'mc'
+    env:
+      MINIO_ACCESS_KEY: "{{MINIO_ACCESS_KEY}}"
+      MINIO_SECRET_KEY: "{{MINIO_SECRET_KEY}}"
+      MINIO_HOST_PORT: "{{MINIO_HOST_PORT}}"
+      MINIO_HOST_URI: "{{MINIO_HOST_URI}}"
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc config host add dsb ${MINIO_HOST_URI}:${MINIO_HOST_PORT} ${MINIO_ACCESS_KEY} ${MINIO_SECRET_KEY};
+      /usr/bin/mc rm -r --force dsb/build-tags;
+      /usr/bin/mc mb dsb/build-tags;
+      exit 0;
+      "
+    state: started

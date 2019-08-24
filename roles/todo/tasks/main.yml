@@ -1,0 +1,29 @@
+- name: Create Log Directory
+  become: true
+  file:
+    path: /opt/logs/todo
+    state: directory
+    recurse: true
+    owner: '1001'
+- name: Download Todo Build Tag 
+  become: elquico
+  delegate_to: localhost
+  shell: ~/minio/mc cp local/build-tags/eich-matrix files/build_tags/eich-matrix
+- name: Start Todo Container
+  docker_container:
+    name: eich-matrix
+    image: "{{todo_build_tag}}"
+    pull: yes
+    volumes: 
+      - /opt/logs/todo:/opt/logs
+    ports: 
+      - 448:443
+    env:
+      PG_PASSWORD: "{{PG_PASSWORD}}"
+      PG_USER: "{{PG_USER}}"
+      PG_CONNECTION_STRING: "{{PG_CONNECTION_STRING}}"
+      MONGO_USER: "{{MONGO_USER}}"
+      MONGO_PASSWORD: "{{MONGO_PASSWORD}}"
+      MONGO_HOST: "{{MONGO_HOST}}"
+      MONGO_PORT: "{{MONGO_PORT}}"
+      KS_PASSWORD: "{{KS_PASSWORD}}"

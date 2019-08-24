@@ -1,0 +1,22 @@
+- hosts: dsb
+  roles:
+  - role: CLIENTS
+    tags:
+      - minio_client
+- hosts: proc
+  tags: proc
+  roles:
+  - role: MINIO
+- hosts: proc
+  tags: jenkins 
+  roles:
+    - jenkins
+- hosts: database
+  tags: database
+  roles:
+    - postgres
+    - mongo
+- hosts: web
+  tags: web
+  roles:
+    - todo

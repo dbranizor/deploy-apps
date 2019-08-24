@@ -1,0 +1,23 @@
+---
+- name:  name 
+  file:
+    path: ~/tools
+    state: directory
+- name: Minio-Client Make Config Folder
+  file:
+    path: ~/.mc
+    state: directory
+- name: Minio-Client download binary
+  get_url:
+    url: https://dl.min.io/client/mc/release/linux-amd64/mc
+    dest: ~/tools/mc
+    mode: '0755'
+- name: Minio-Client make client executable
+  file:   
+    dest: ~/tools/mc
+    mode: a+x
+- name: Minio-Client Add Config file
+  template:
+    src: templates/config.json.k2
+    dest: ~/.mc/config.json
+    mode: '0755'

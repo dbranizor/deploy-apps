@@ -1,0 +1,28 @@
+- name: Download Build Tag 
+  become: elquico
+  delegate_to: localhost
+  shell: ~/minio/mc cp local/build-tags/mongo files/build_tags/mongo
+- name: Init Mongo Data Directory
+  become: true
+  file:
+    path: ~/mongo
+    state: directory
+    owner: elquico
+    group: docker
+- name: Start Mongo Container
+  docker_container:
+    name: mongo
+    image: "{{build_tag}}"
+    command: server /data
+    # volumes: 
+    #   - ~/mongo:/data/db,rw
+    ports: 
+      - "27017:27017"
+    env:
+      MONGO_INITDB_ROOT_USERNAME: "root"
+      MONGO_INITDB_ROOT_PASSWORD: "{{MONGO_INITDB_ROOT_PASSWORD}}"
+      MONGO_DATABASE: eich
+      MONGO_USER: eich
+      MONGO_INITDB_DATABASE: eich
+      MONGO_PASSWORD: "{{MONGO_PASSWORD}}"
+    state: started

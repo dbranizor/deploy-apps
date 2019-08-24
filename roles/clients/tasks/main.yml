@@ -1,0 +1,2 @@
+- import_tasks: minio.yml
+  tags: [ minio_client ]

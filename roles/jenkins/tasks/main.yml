@@ -1,0 +1,27 @@
+- name: Download Build Tag 
+  become: elquico
+  delegate_to: localhost
+  shell: ~/minio/mc cp local/build-tags/jenkins files/build_tags/jenkins
+- name: Start Jenkins Container
+  docker_container:
+    name: dsb-jenkins
+    image: "{{jenkins_build_tag}}"
+    volumes: 
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - 50000:50000
+      - 8088:8080
+    env:
+      CASC_JENKINS_CONFIG: '/var/jenkins_home/jenkins.yaml'
+      MINIO_HOST_URI: "{{MINIO_HOST_URI}}"
+      MINIO_HOST_PORT: "{{MINIO_HOST_PORT}}"
+      MINIO_SECRET_KEY: "{{MINIO_SECRET_KEY}}"
+      MINIO_ACCESS_KEY: "{{MINIO_ACCESS_KEY}}"
+    state: started
+- name: Minio-Client Add Config file
+  template:
+    src: templates/config.json.k2
+    dest: /tmp/minio_config.json
+    mode: '0755'
+- name: Copy template into docker Container
+  shell: docker cp /tmp/minio_config.json dsb-jenkins:/var/jenkins_home/.mc/config.json 

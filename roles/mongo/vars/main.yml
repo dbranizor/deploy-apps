@@ -1,0 +1,1 @@
+build_tag: "{{lookup('file', 'files/build_tags/mongo')}}"
